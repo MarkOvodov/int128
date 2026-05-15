@@ -305,3 +305,46 @@ Int128 Int128::abs() const {
     }
     return *this;
 }
+
+std::ostream& operator<<(std::ostream& out, const Expression& expr) {
+    expr.print(out);
+    return out;
+}
+
+Const::Const(Int128 value) : value(value) {}
+Int128 Const::eval(const Variables&) const {return value;}
+Const* Const::clone() const {return new Const(value);}
+void Const::print(std::ostream& out) const {out << value;}
+
+Variable::Variable(std::string name) : name(std::move(name)) {}
+Int128 Variable::eval(const Variables& vars) const {return vars.at(name);}
+Variable* Variable::clone() const {return new Variable(name);}
+void Variable::print(std::ostream& out) const {out << name;}
+
+UnaryExpr::UnaryExpr(const Expression& expr) : operand(expr.clone()) {}
+UnaryExpr::UnaryExpr(const UnaryExpr& other) : operand(other.operand->clone()) {}
+
+BinaryExpr::BinaryExpr(const Expression& l, const Expression& r)
+    : lhs(l.clone()), rhs(r.clone()) {}
+BinaryExpr::BinaryExpr(const BinaryExpr& other)
+    : lhs(other.lhs->clone()), rhs(other.rhs->clone()) {}
+
+Int128 Negate::eval(const Variables& vars) const {return -operand->eval(vars);}
+Negate* Negate::clone() const {return new Negate(*operand);}
+void Negate::print(std::ostream& out) const {out << "(-" << *operand << ")";}
+
+Int128 Add::eval(const Variables& vars) const {return lhs->eval(vars) + rhs->eval(vars);}
+Add* Add::clone() const {return new Add(*lhs, *rhs);}
+void Add::print(std::ostream& out) const {out << "(" << *lhs << " + " << *rhs << ")";}
+
+Int128 Subtract::eval(const Variables& vars) const {return lhs->eval(vars) - rhs->eval(vars);}
+Subtract* Subtract::clone() const {return new Subtract(*lhs, *rhs);}
+void Subtract::print(std::ostream& out) const {out << "(" << *lhs << " - " << *rhs << ")";}
+
+Int128 Multiply::eval(const Variables& vars) const {return lhs->eval(vars) * rhs->eval(vars);}
+Multiply* Multiply::clone() const {return new Multiply(*lhs, *rhs);}
+void Multiply::print(std::ostream& out) const {out << "(" << *lhs << " * " << *rhs << ")";}
+
+Int128 Divide::eval(const Variables& vars) const {return lhs->eval(vars) / rhs->eval(vars);}
+Divide* Divide::clone() const {return new Divide(*lhs, *rhs);}
+void Divide::print(std::ostream& out) const {out << "(" << *lhs << " / " << *rhs << ")";}
